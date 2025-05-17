@@ -1,10 +1,11 @@
-"use client"
+ // components/pos-interface.tsx
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search,
   ShoppingCart,
@@ -20,128 +21,120 @@ import {
   User,
   Users,
   UserCheck,
-} from "lucide-react"
-import { useServices } from "@/context/service-context"
-import { type ServiceCategory, CATEGORY_LABELS } from "@/types/services"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
-import { addTransaction } from "@/data/reports-data"
-import { useAuth } from "@/context/auth-context"
-import { useCustomers } from "@/context/customer-context"
-import { CustomerSelector } from "@/components/customer-selector"
-import { TherapistSelector } from "@/components/therapist-selector"
+} from "lucide-react";
+import { useServices } from "@/context/service-context";
+import { type ServiceCategory, CATEGORY_LABELS } from "@/types/services";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { addTransaction } from "@/data/reports-data";
+import { useAuth } from "@/context/auth-context";
+import { useCustomers } from "@/context/customer-context";
+import { CustomerSelector } from "@/components/customer-selector";
+import { TherapistSelector } from "@/components/therapist-selector";
 
 type CartItem = {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  category?: string
-}
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  category?: string;
+};
 
-type DiscountType = "none" | "percentage" | "voucher"
+type DiscountType = "none" | "percentage" | "voucher";
 
 export default function PosInterface() {
-  const { getActiveServicesByCategory } = useServices()
-  const { user } = useAuth()
-  const { customers } = useCustomers()
-  const [activeCategory, setActiveCategory] = useState<ServiceCategory>("facial")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
-  const [discountType, setDiscountType] = useState<DiscountType>("none")
-  const [discountPercentage, setDiscountPercentage] = useState<"5" | "10" | "20">("10")
-  const [voucherCode, setVoucherCode] = useState("")
-  const [voucherAmount, setVoucherAmount] = useState("")
-  const [showDiscountOptions, setShowDiscountOptions] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(null)
-  const [showCustomerSelector, setShowCustomerSelector] = useState(false)
+  const { getActiveServicesByCategory } = useServices();
+  const { user } = useAuth();
+  const { customers } = useCustomers();
+  const [activeCategory, setActiveCategory] = useState<ServiceCategory>("facial");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [discountType, setDiscountType] = useState<DiscountType>("none");
+  const [discountPercentage, setDiscountPercentage] = useState<"5" | "10" | "20">("10");
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherAmount, setVoucherAmount] = useState("");
+  const [showDiscountOptions, setShowDiscountOptions] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(null);
+  const [showCustomerSelector, setShowCustomerSelector] = useState(false);
   const [selectedTherapist, setSelectedTherapist] = useState<{ id: string; name: string } | null>(
     user?.role !== "manager" ? { id: user?.id || "", name: user?.name || "" } : null,
-  )
-  const [showTherapistSelector, setShowTherapistSelector] = useState(false)
+  );
+  const [showTherapistSelector, setShowTherapistSelector] = useState(false);
 
   const categories = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
     id: value as ServiceCategory,
     name: label,
-  }))
+  }));
 
   const addToCart = (product: { id: string; name: string; price: number; category?: string }) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id)
+      const existingItem = prevCart.find((item) => item.id === product.id);
 
       if (existingItem) {
-        return prevCart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
+        return prevCart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
       } else {
-        return [...prevCart, { ...product, quantity: 1 }]
+        return [...prevCart, { ...product, quantity: 1 }];
       }
-    })
-  }
+    });
+  };
 
   const updateQuantity = (id: string, change: number) => {
     setCart((prevCart) =>
       prevCart
         .map((item) => (item.id === id ? { ...item, quantity: Math.max(0, item.quantity + change) } : item))
         .filter((item) => item.quantity > 0),
-    )
-  }
+    );
+  };
 
   const removeItem = (id: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== item.id))
-  }
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+  };
 
   const clearCart = () => {
-    setCart([])
-    setShowPaymentOptions(false)
-    setDiscountType("none")
-    setVoucherCode("")
-    setVoucherAmount("")
-    setShowDiscountOptions(false)
-    setSelectedCustomer(null)
-    // Don't reset therapist if not manager
+    setCart([]);
+    setShowPaymentOptions(false);
+    setDiscountType("none");
+    setVoucherCode("");
+    setVoucherAmount("");
+    setShowDiscountOptions(false);
+    setSelectedCustomer(null);
     if (user?.role === "manager") {
-      setSelectedTherapist(null)
+      setSelectedTherapist(null);
     }
-  }
+  };
 
   const handleCheckout = () => {
-    // Validate that both customer and therapist are selected
     if (!selectedCustomer) {
-      toast.error("Please select a customer before checkout")
-      return
+      toast.error("Please select a customer before checkout");
+      return;
     }
 
     if (!selectedTherapist) {
-      toast.error("Please select a therapist before checkout")
-      return
+      toast.error("Please select a therapist before checkout");
+      return;
     }
 
-    setShowPaymentOptions(true)
-  }
+    setShowPaymentOptions(true);
+  };
 
   const handlePayment = (method: string) => {
-    // Double-check that both customer and therapist are selected
     if (!selectedCustomer || !selectedTherapist) {
-      toast.error("Please select both customer and therapist before payment")
-      return
+      toast.error("Please select both customer and therapist before payment");
+      return;
     }
 
-    // Generate a unique transaction ID
-    const transactionId = `TX${Date.now().toString().slice(-6)}`
+    const transactionId = `TX${Date.now().toString().slice(-6)}`;
 
-    // Process each item in the cart as a separate transaction
     cart.forEach((item) => {
-      // Calculate the discount amount for this item
-      let itemDiscount = 0
+      let itemDiscount = 0;
       if (discountType === "percentage") {
-        itemDiscount = item.price * (Number(discountPercentage) / 100)
+        itemDiscount = item.price * (Number(discountPercentage) / 100);
       } else if (discountType === "voucher" && voucherAmount) {
-        // Distribute voucher discount proportionally across items
-        const proportion = (item.price * item.quantity) / subtotal
-        itemDiscount = Math.min(Number(voucherAmount) * proportion, item.price)
+        const proportion = (item.price * item.quantity) / subtotal;
+        itemDiscount = Math.min(Number(voucherAmount) * proportion, item.price);
       }
 
-      // Record the transaction
       addTransaction({
         id: `${transactionId}-${item.id}`,
         date: new Date(),
@@ -154,68 +147,64 @@ export default function PosInterface() {
         amount: item.price * item.quantity,
         discount: itemDiscount * item.quantity,
         paymentMethod: method,
-      })
-    })
+      });
+    });
 
     const discountInfo =
       discountType === "none"
         ? ""
         : discountType === "percentage"
-          ? ` with ${discountPercentage}% discount`
-          : ` with voucher ${voucherCode}`
+        ? ` with ${discountPercentage}% discount`
+        : ` with voucher ${voucherCode}`;
 
     toast.success(
       `Payment processed via ${method}${discountInfo} for ${selectedCustomer.name} by ${selectedTherapist.name}. Thank you!`,
-    )
-    clearCart()
-  }
+    );
+    clearCart();
+  };
 
   const applyVoucher = () => {
     if (!voucherCode.trim()) {
-      toast.error("Please enter a voucher code")
-      return
+      toast.error("Please enter a voucher code");
+      return;
     }
 
     if (!voucherAmount.trim() || isNaN(Number(voucherAmount)) || Number(voucherAmount) <= 0) {
-      toast.error("Please enter a valid voucher amount")
-      return
+      toast.error("Please enter a valid voucher amount");
+      return;
     }
 
-    toast.success(`Voucher ${voucherCode} applied for £${voucherAmount}`)
-    setDiscountType("voucher")
-    setShowDiscountOptions(false)
-  }
+    toast.success(`Voucher ${voucherCode} applied for £${voucherAmount}`);
+    setDiscountType("voucher");
+    setShowDiscountOptions(false);
+  };
 
   const removeDiscount = () => {
-    setDiscountType("none")
-    setVoucherCode("")
-    setVoucherAmount("")
-  }
+    setDiscountType("none");
+    setVoucherCode("");
+    setVoucherAmount("");
+  };
 
-  // Get services for the active category
-  const categoryServices = getActiveServicesByCategory(activeCategory)
+  const categoryServices = getActiveServicesByCategory(activeCategory);
 
-  // Filter services based on search query
   const filteredServices = searchQuery
     ? Object.values(categories)
         .flatMap((category) => getActiveServicesByCategory(category.id))
         .filter((service) => service.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : categoryServices
+    : categoryServices;
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Calculate discount
-  let discountAmount = 0
+  let discountAmount = 0;
   if (discountType === "percentage") {
-    discountAmount = subtotal * (Number(discountPercentage) / 100)
+    discountAmount = subtotal * (Number(discountPercentage) / 100);
   } else if (discountType === "voucher" && voucherAmount) {
-    discountAmount = Math.min(Number(voucherAmount), subtotal)
+    discountAmount = Math.min(Number(voucherAmount), subtotal);
   }
 
-  const total = subtotal - discountAmount
+  const total = subtotal - discountAmount;
 
-  // For manager role, we don't need extra padding at the top since there's no full header
-  const topPadding = user?.role === "manager" ? "mt-0" : "mt-20"
+  const topPadding = user?.role === "manager" ? "mt-0" : "mt-20";
 
   return (
     <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${topPadding}`}>
@@ -505,9 +494,9 @@ export default function PosInterface() {
                                     : "h-7 min-w-[40px] border-pink-200"
                                 }
                                 onClick={() => {
-                                  setDiscountPercentage(percent as "5" | "10" | "20")
-                                  setDiscountType("percentage")
-                                  setShowDiscountOptions(false)
+                                  setDiscountPercentage(percent as "5" | "10" | "20");
+                                  setDiscountType("percentage");
+                                  setShowDiscountOptions(false);
                                 }}
                               >
                                 {percent}%
@@ -621,8 +610,8 @@ export default function PosInterface() {
       {showCustomerSelector && (
         <CustomerSelector
           onSelect={(customer) => {
-            setSelectedCustomer(customer)
-            setShowCustomerSelector(false)
+            setSelectedCustomer(customer);
+            setShowCustomerSelector(false);
           }}
           onClose={() => setShowCustomerSelector(false)}
           therapistId={selectedTherapist?.id || user?.id || ""}
@@ -633,12 +622,12 @@ export default function PosInterface() {
       {showTherapistSelector && (
         <TherapistSelector
           onSelect={(therapist) => {
-            setSelectedTherapist(therapist)
-            setShowTherapistSelector(false)
+            setSelectedTherapist(therapist);
+            setShowTherapistSelector(false);
           }}
           onClose={() => setShowTherapistSelector(false)}
         />
       )}
     </div>
-  )
+  );
 }
