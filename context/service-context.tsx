@@ -105,11 +105,26 @@ export function ServiceProvider({ children }: { children: ReactNode }) {
   };
 
   const getServicesByCategory = (category: ServiceCategory) => {
+    if (category === "products-vouchers") {
+      return services.filter(
+        (service) =>
+          service.category === "products-vouchers" ||
+          service.category === "vouchers"
+      );
+    }
     return services.filter((service) => service.category === category);
   };
 
   const getActiveServicesByCategory = useCallback(
     (category: ServiceCategory) => {
+      if (category === "products-vouchers") {
+        return services.filter(
+          (service) =>
+            (service.category === "products-vouchers" ||
+              service.category === "vouchers") &&
+            service.active
+        );
+      }
       return services.filter(
         (service) => service.category === category && service.active
       );

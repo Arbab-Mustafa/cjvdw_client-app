@@ -7,18 +7,23 @@ export type ServiceCategory =
   | "hot-wax"
   | "sunbed"
   | "products-vouchers"
+  | "massage"
+  | "vouchers";
 
 export interface ServiceItem {
-  id: string
-  name: string
-  description?: string
-  price: number
-  duration?: number // in minutes
-  category: ServiceCategory
-  active: boolean
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  duration?: number; // in minutes
+  category: ServiceCategory;
+  active: boolean;
 }
 
-export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
+export const CATEGORY_LABELS: Record<
+  Exclude<ServiceCategory, "vouchers">,
+  string
+> = {
   facials: "Facials",
   waxing: "Waxing",
   body: "Body",
@@ -27,4 +32,5 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   "hot-wax": "Hot Wax",
   sunbed: "Sunbed",
   "products-vouchers": "Products & Vouchers",
-}
+  massage: "Massage",
+};
